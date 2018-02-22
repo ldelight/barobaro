@@ -1,10 +1,13 @@
 package com.barocredit.barobaro.Activities;
 
+import android.app.Activity;
 import android.app.DownloadManager;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -37,11 +40,14 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     //기본 오브젝트
     WebView mWebView;
     private final Handler handler = new Handler();
+    Activity activity = this;;
 
     //파일 업로드
     private String mCameraPhotoPath;
@@ -52,10 +58,14 @@ public class MainActivity extends AppCompatActivity {
     private Handler mHandler  = new Handler();
     private boolean mFlag = false;
 
+    // 웹뷰 로딩 관련
+    ProgressDialog mProgress;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         initWebView();
     }
 
@@ -83,9 +93,58 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(i);
                     return true;
                 }  else {
-                    view.loadUrl(url);
+                    Log.d("DEBUG","TEST:"+url);
+
+                    mProgress = new ProgressDialog(activity);
+                    mProgress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    mProgress.setMessage("연결중입니다....");
+                    mProgress.setCancelable(false);
+
+                    mProgress.show();
+
+                    // 헤더 인증 문자열 삽입
+                    Map<String, String> extraHeaders = new HashMap<String, String>(); extraHeaders.put(Constant.AUTH_HEADER_KEY,Constant.AUTH_HEADER_VAL);
+
+
+                    view.loadUrl(url,extraHeaders);
+
+                    Toast.makeText(MainActivity.this, ".isShowing:" + mProgress.isShowing(), Toast.LENGTH_SHORT).show();
+
+                    if (mProgress.isShowing()) {
+                    //    mProgress.dismiss();
+                    }
+
                 }
                 return false;
+            }
+
+            // 웹페이지 로딩이 시작할 때 처리
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                if (mProgress == null) {
+                    mProgress = new ProgressDialog(activity);
+                    mProgress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    //mProgress.setTitle("Loading...");
+                    mProgress.setMessage("연결중입니다....");
+                    mProgress.setCancelable(false);
+                    mProgress.show();
+                }
+            }
+
+            //웹페이지 로딩중 에러가 발생했을때 처리
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                if (mProgress.isShowing()) {
+                    mProgress.dismiss();
+                }
+            }
+
+            //웹페이지 로딩이 끝났을 때 처리
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                if (mProgress.isShowing()) {
+                    mProgress.dismiss();
+                }
             }
 
         });
@@ -347,7 +406,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void  onBackPressed() {
-        Toast.makeText(this, ".getUrl:" + mWebView.getUrl(), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, ".getUrl:" + mWebView.getUrl(), Toast.LENGTH_SHORT).show();
         //super.onBackPressed();
 
         if (mWebView.getUrl().indexOf(Constant.MAIN_URL) > 0  || mWebView.getUrl().indexOf(Constant.LOGIN_URL) > 0   || mWebView.getUrl().equalsIgnoreCase(Constant.INITURL)){

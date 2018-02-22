@@ -15,4 +15,6 @@ public class Constant {
     public static final String TYPE_IMAGE = "image/*";
     public static final int INPUT_FILE_REQUEST_CODE = 1;
 
+    public static final String AUTH_HEADER_KEY = "AuthorizationKey";
+    public static final String AUTH_HEADER_VAL = "AuthorizationVal";
 }
