@@ -61,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
     // 웹뷰 로딩 관련
     ProgressDialog mProgress;
 
+    //useragent
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.getSettings().setLoadsImagesAutomatically(true);
         mWebView.getSettings().setGeolocationEnabled(true);
+
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, final String url) {
@@ -103,10 +106,14 @@ public class MainActivity extends AppCompatActivity {
                     mProgress.show();
 
                     // 헤더 인증 문자열 삽입
-                    Map<String, String> extraHeaders = new HashMap<String, String>(); extraHeaders.put(Constant.AUTH_HEADER_KEY,Constant.AUTH_HEADER_VAL);
+//                    Map<String, String> extraHeaders = new HashMap<String, String>(); extraHeaders.put(Constant.AUTH_HEADER_KEY,Constant.AUTH_HEADER_VAL);
+//                    view.loadUrl(url,extraHeaders);
 
+                    //useragent 값 설정
+                    String userAgent = mWebView.getSettings().getUserAgentString();
+                    mWebView.getSettings().setUserAgentString(userAgent + " " + Constant.USER_AGENT_STRING);
+                    view.loadUrl(url);
 
-                    view.loadUrl(url,extraHeaders);
 
                     Toast.makeText(MainActivity.this, ".isShowing:" + mProgress.isShowing(), Toast.LENGTH_SHORT).show();
 
@@ -276,9 +283,9 @@ public class MainActivity extends AppCompatActivity {
 
                 startActivityForResult(chooserIntent, Constant.INPUT_FILE_REQUEST_CODE);
             }
-
-
         });
+
+
 
         if(getIntent().getStringExtra("STARTURL") != null){
             mWebView.loadUrl(getIntent().getStringExtra("STARTURL"));

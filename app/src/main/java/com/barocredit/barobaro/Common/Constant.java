@@ -5,9 +5,9 @@ package com.barocredit.barobaro.Common;
  */
 
 public class Constant {
-    public static final String INITURL = "https://m.naver.com/";
+    public static final String INITURL = "http://app.barocredit.iwi.co.kr";
     public static final String MAIN_URL = "main.do";
-    public static final String LOGIN_URL = "https://m.naver.com/";
+    public static final String LOGIN_URL = "http://app.barocredit.iwi.co.kr";
     public static final String JOIN_URL = "join.do";
     public static boolean isAutoLoginYn = true;
     public static String gcmRegId = null;
@@ -15,6 +15,7 @@ public class Constant {
     public static final String TYPE_IMAGE = "image/*";
     public static final int INPUT_FILE_REQUEST_CODE = 1;
 
-    public static final String AUTH_HEADER_KEY = "AuthorizationKey";
-    public static final String AUTH_HEADER_VAL = "AuthorizationVal";
+//    public static final String AUTH_HEADER_KEY = "AuthorizationKey";
+//    public static final String AUTH_HEADER_VAL = "AuthorizationVal";
+    public static final String USER_AGENT_STRING = "BaroCreditApp";
 }
