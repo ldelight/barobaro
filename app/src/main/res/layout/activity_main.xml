@@ -13,5 +13,4 @@
         android:id="@+id/webView"
         android:layout_gravity="center_horizontal" />
 
-
 </android.support.constraint.ConstraintLayout>

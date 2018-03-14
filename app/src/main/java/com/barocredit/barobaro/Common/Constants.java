@@ -4,7 +4,7 @@ package com.barocredit.barobaro.Common;
  * Created by ctest on 2018-02-22.
  */
 
-public class Constant {
+public class Constants {
     public static final String INITURL = "http://app.barocredit.iwi.co.kr";
     public static final String MAIN_URL = "main.do";
     public static final String LOGIN_URL = "http://app.barocredit.iwi.co.kr";
@@ -18,4 +18,10 @@ public class Constant {
 //    public static final String AUTH_HEADER_KEY = "AuthorizationKey";
 //    public static final String AUTH_HEADER_VAL = "AuthorizationVal";
     public static final String USER_AGENT_STRING = "BaroCreditApp";
+
+    //XecureAppShield 관련 변수
+    public static String XAS_DOMAIN = "http://121.65.97.35:8080/xasService/";
+    public static String XAS_APPID = "barocredit";
+    public static String XAS_APPVER = "1";
+    public static boolean XAS_LIVE_UPDATE = true;
 }

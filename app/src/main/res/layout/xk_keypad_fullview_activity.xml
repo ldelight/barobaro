@@ -1,0 +1,99 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:orientation="vertical"
+	android:background="#F5F5F5" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        android:background="@drawable/title_back"
+        android:gravity="center"
+        android:orientation="horizontal" >
+
+		<TextView
+		    android:layout_width="0dip"
+		    android:layout_height="wrap_content"
+		    android:text="보안 키패드"
+		    android:textColor="#FCFCFC"
+		    android:textSize="20sp"
+		    android:textStyle="bold"
+		    android:layout_marginLeft="20dip"
+		    android:layout_weight="1"
+		    android:layout_gravity="center_vertical"
+		    android:gravity="center" />
+
+		<ImageButton
+		    android:id="@+id/cancel_button"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:src="@drawable/cancel_button"
+		    android:background="@null"
+		    android:layout_marginRight="10dip" />
+		
+	</LinearLayout>
+	
+    <LinearLayout
+        android:id="@+id/xk_keypad_fullview_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginTop="40dp"
+        android:orientation="vertical" >
+
+		<TextView
+		    android:id="@+id/xk_keypad_fullview_subtitle"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:layout_marginBottom="5dip"
+		    android:layout_marginLeft="10dip"
+		    android:layout_marginTop="10dp"
+		    android:textColor="#353535"
+		    android:textSize="16sp"
+		    android:textStyle="bold" />
+	    
+		<LinearLayout
+		    android:id="@+id/edittext_button_layout"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:orientation="vertical" >
+	
+		    <LinearLayout
+		        android:id="@+id/edittext_layout"
+		        android:layout_width="fill_parent"
+		        android:layout_height="40dp"
+		        android:background="@drawable/keypad_layout_back" 
+		        android:orientation="vertical"
+		        android:layout_marginLeft="10dp"
+		        android:layout_marginRight="10dp">
+
+		        <EditText
+		            android:id="@+id/xk_keypad_fullview_edittext"
+		            android:layout_width="fill_parent"
+		            android:layout_height="40dp"
+		            android:background="@null"
+		            android:inputType="textPassword"
+		            android:layout_marginLeft="3dip" />
+			
+		    </LinearLayout>
+
+		</LinearLayout>
+		
+	</LinearLayout>
+		
+	<com.softforum.xecurekeypad.XKKeypadTopLayout
+        android:id="@+id/xk_keypad_top_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#A6ACB8"
+        android:visibility="gone" />
+
+    <com.softforum.xecurekeypad.XKKeypad
+		android:id="@+id/xk_keypad"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:layout_centerHorizontal="true"
+		android:background="#EEF1F6" />
+    
+</RelativeLayout>
