@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#FFFFFF"
+    android:orientation="vertical" >
+
+    <!-- Top -->
+    <!-- 
+    <com.softforum.xecure.ui.XTopView
+        android:id="@+id/top_view"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        button_text="내보내기"
+        description="해당 인증서를 PC로 내보냅니다."
+        subject="인증서 내보내기" />
+     -->
+     
+	<!-- Top.Description -->
+	<TextView
+	    android:id="@+id/top_desc_text"
+	    style="@style/TextTopDesc"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:focusable="true" 
+	    android:focusableInTouchMode="true"
+	    android:text="해당 인증서를 PC로 내보냅니다."
+	    />
+
+   	<!-- Top.Main -->
+	<RelativeLayout
+		android:id="@+id/top_main_layout"
+		android:layout_width="fill_parent"
+		android:layout_height="40dp"
+		android:background="@drawable/shape_gradient_grey_topsubject"
+		>
+
+	    <!-- Top.Main.Subject -->
+
+		<TextView
+		    android:id="@+id/top_subject_text"
+		    style="@style/TextTopSubject"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_centerInParent="true"
+		    android:focusable="true"
+		    android:focusableInTouchMode="true"
+		    android:text="인증서 내보내기" />
+	    
+	    <!-- Top.Main.Icon -->
+	    <ImageView android:id="@+id/top_icon_image"
+			android:layout_width="31dp"
+			android:layout_height="31dp"
+			android:layout_alignParentLeft="true"
+			android:layout_alignParentBottom="true"
+	        />
+
+	    <!-- Top.Main.Button -->
+
+		<Button
+            android:id="@+id/top_right_button"
+            android:layout_width="60dp"
+            android:layout_height="34dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:padding="0dp"
+            android:textSize="12sp"
+            android:textColor="#FF000000"
+            android:text="내보내기"
+		    />
+ 
+	</RelativeLayout>
+	<!-- Top.Main End -->
+    
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:background="@drawable/shape_round_stroke"
+                android:orientation="horizontal"
+                android:padding="10dp" >
+
+                <ImageView
+                    android:id="@+id/icon"
+                    style="@style/ImageIcon"
+                    android:layout_width="29dp"
+                    android:layout_height="29dp" />
+
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" >
+
+                    <!-- Middle.MainMsg -->
+
+                    <TextView
+                        android:id="@+id/main_msg"
+                        style="@style/TextMain"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content" />
+
+                    <!-- Middle.SubMsg1 -->
+
+                    <TextView
+                        android:id="@+id/sub_msg1"
+                        style="@style/TextSub"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content" />
+
+                    <!-- Middle.SubMsg2 -->
+
+                    <TextView
+                        android:id="@+id/sub_msg2"
+                        style="@style/TextSub"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="200dp"
+                android:layout_margin="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/shape_round_stroke"
+                android:orientation="vertical" >
+
+                <!-- 
+                <WebView
+                    android:id="@+id/ExportCertificate_WebView"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent" />
+                -->
+
+                <TextView
+                    android:id="@+id/textView1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#1d1d1d"
+                    android:text="1. pc에서 홈페이지에 접속해 주십시오." />
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="10dp"
+                    android:text="" />
+
+                <TextView
+                    android:id="@+id/textView3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#1d1d1d"
+                    android:text="2. PC화면에서 인증서 가져오기 버튼을 클릭해주세요." />
+
+                <TextView
+                    android:id="@+id/textView4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="10dp"
+                    android:text="" />
+
+                <TextView
+                    android:id="@+id/textView5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#1d1d1d"
+                    android:text="3.  모바일화면에서 PC로 내보낼 인증서를 선택하신 후 비밀번호를 입력해주세요. " />
+                
+                <TextView
+                    android:id="@+id/textView6"
+                    android:layout_width="wrap_content"
+                    android:layout_height="10dp"
+                    android:text="" />
+                
+                <TextView
+                    android:id="@+id/textView7"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#1d1d1d"
+                    android:text="4. 모바일 화면에 보이는 인증번호를 PC에서 입력해 주세요." />
+                
+                <TextView
+                    android:id="@+id/textView8"
+                    android:layout_width="wrap_content"
+                    android:layout_height="10dp"
+                    android:text="" />
+                
+                <TextView
+                    android:id="@+id/textView9"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#1d1d1d"
+                    android:text="5. PC 화면에서 인증서 가져오기 버튼을 클릭하시면 인증서 가져오기가 시작됩니다." />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" >
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="13dp"
+                        android:gravity="center"
+                        android:text="인증번호"
+                        android:textColor="#878787"
+                        android:textSize="15sp" />
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" >
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" >
+
+                        <EditText
+                            android:id="@+id/GetAuthenticationcode_Export1"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="10dp"
+                            android:layout_marginRight="3.33dp"
+                            android:layout_weight="1"
+                            android:background="#c0c0c0"
+                            android:clickable="false"
+                            android:focusable="false"
+                            android:ems="10"
+                            android:gravity="center"
+                            android:textColor="#1d1d1d"
+                            android:textSize="24sp" />
+
+                        <EditText
+                            android:id="@+id/GetAuthenticationcode_Export2"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="3.33dp"
+                            android:layout_marginRight="3.33dp"
+                            android:layout_weight="1"
+                            android:background="#c0c0c0"
+                            android:clickable="false"
+                            android:focusable="false"
+                            android:ems="10"
+                            android:gravity="center"
+                            android:textColor="#1d1d1d"
+                            android:textSize="24sp" >
+                        </EditText>
+
+                        <EditText
+                            android:id="@+id/GetAuthenticationcode_Export3"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="3.33dp"
+                            android:layout_marginRight="10dp"
+                            android:layout_weight="1"
+                            android:background="#c0c0c0"
+                            android:clickable="false"
+                            android:focusable="false"
+                            android:ems="10"
+                            android:gravity="center"
+                            android:textColor="#1d1d1d"
+                            android:textSize="24sp" />
+                    </LinearLayout>
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical" >
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

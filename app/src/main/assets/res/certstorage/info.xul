@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/global.css"  type="text/css"?>
+
+<!DOCTYPE window SYSTEM "chrome://xecurewebclient/locale/xecurewebclient.dtd">
+
+<window
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	title="&clientsm.infotitle;">
+
+	<vbox>
+		<spacer height="10"/>
+		<hbox align="center">
+			<image src='chrome://xecurewebclient/skin/logo.bmp'/>
+			<vbox align="center">
+				<label value="&clientsm.infolabel;"/>
+				<label value="&clientsm.company;"/>
+			</vbox>
+		</hbox>
+
+		<hbox>
+			<spacer flex="1"/>
+			<button label="&clientsm.close;" oncommand="close();"/>
+		</hbox>
+		<spacer height="10"/>
+	</vbox>
+
+</window>
