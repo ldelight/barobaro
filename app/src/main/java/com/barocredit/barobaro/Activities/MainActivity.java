@@ -1,9 +1,11 @@
 package com.barocredit.barobaro.Activities;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
@@ -15,6 +17,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -38,6 +41,9 @@ import android.widget.Toast;
 import com.barocredit.barobaro.Common.Constants;
 import com.barocredit.barobaro.Common.BaroChromeClient;
 import com.barocredit.barobaro.R;
+import com.gun0912.tedpermission.PermissionListener;
+
+import com.gun0912.tedpermission.TedPermission;
 import com.softforum.xecure.XecureSmart;
 import com.softforum.xecure.util.XCoreWrapperAsyncCaller;
 import com.softforum.xecure.util.XCoreWrapperAsyncParam;
@@ -56,8 +62,10 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.softforum.xecure.ui.crypto.SignCertSelectWindow.mSignOption;
@@ -89,13 +97,14 @@ public class MainActivity extends AppCompatActivity {
     private String mSignedMsg;
     private String mVidInfoMsg;
 
+    /*
     private String mEncMsg;
     private String mDecMsg;
     private String mEnc_q_Msg;
     private String mEnc_p_Msg;
 
 
-    //
+    */
     private String mXgateAddr = "1.237.174.154:3028:3029";
 
     //////////////////////////////////////////////////////
@@ -103,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
     //////////////////////////////////////////////////////
     // for EditText
     //
+
     private EditText mEdit_plainMsg;				// edt_plain_msg
 //    private EditText mEdit_signedMsg;				// edt_signed_msg
 //    private EditText mEdit_vidInfoMsg;				// edt_vidInfo_msg
@@ -131,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
     // for XKEditText (XecureKeypad)
     //
     private XKEditText mXKEdit_full_idn;			// edt_xk_full_idn (IDN-식별번호(ex. 주민번호) 입력)
+    /**/
     // [END]
     //////////////////////////////////////////////////////
 
@@ -144,24 +155,20 @@ public class MainActivity extends AppCompatActivity {
 
     String mPEMVal = "";
 
-    private int mSignOption = 20;   // (4+16)
+//    private int mSignOption = 276;   // (4+16+256)
+    private int mSignOption = 12;   // (4+16+256)
 
-    //
-    String hostUrl = "1.237.174.154";
-    String hostPort = "8888";
-
-    // XK E2E URL
-    String mE2EURL = "http://1.237.174.154:8888/xk/xkservice";
-    //useragent
+    String hostUrl = Constants.XAS_BASE_DOMAIN;
+    String hostPort = "80";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+//        checkPermission();
+        //웹뷰 초기화 및 설정
         initWebView();
-        setNativeSetting();
-
+//        setNativeSetting(); //for Testing
     }
 
     private void initWebView() {
@@ -173,6 +180,8 @@ public class MainActivity extends AppCompatActivity {
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.getSettings().setLoadsImagesAutomatically(true);
         mWebView.getSettings().setGeolocationEnabled(true);
+        String userAgent = mWebView.getSettings().getUserAgentString();
+        mWebView.getSettings().setUserAgentString(userAgent + " " + Constants.USER_AGENT_STRING);
 
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
@@ -195,23 +204,11 @@ public class MainActivity extends AppCompatActivity {
                     mProgress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
                     mProgress.setMessage("연결중입니다....");
                     mProgress.setCancelable(false);
-
                     mProgress.show();
-
-                    // 헤더 인증 문자열 삽입
-//                    Map<String, String> extraHeaders = new HashMap<String, String>(); extraHeaders.put(Constant.AUTH_HEADER_KEY,Constant.AUTH_HEADER_VAL);
-//                    view.loadUrl(url,extraHeaders);
-
-                    //useragent 값 설정
-                    String userAgent = mWebView.getSettings().getUserAgentString();
-                    mWebView.getSettings().setUserAgentString(userAgent + " " + Constants.USER_AGENT_STRING);
                     view.loadUrl(url);
 
-
-                    Toast.makeText(MainActivity.this, ".isShowing:" + mProgress.isShowing(), Toast.LENGTH_SHORT).show();
-
                     if (mProgress.isShowing()) {
-                    //    mProgress.dismiss();
+                        mProgress.dismiss();
                     }
 
                 }
@@ -383,7 +380,7 @@ public class MainActivity extends AppCompatActivity {
         if(getIntent().getStringExtra("STARTURL") != null){
             mWebView.loadUrl(getIntent().getStringExtra("STARTURL"));
         }else{
-            mWebView.loadUrl(Constants.INITURL);
+            goInitPage();
         }
 
 
@@ -426,6 +423,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void goInitPage(){
+        SharedPreferences pref = getSharedPreferences("CHECKPERMISSIONURL", MODE_PRIVATE);
+
+        //권한 얻었는지 체크
+        int readPhoneStateCheck = ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_STATE);
+        int cameraCheck  = ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA);
+        int writeExternalStorageCheck  = ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int readExternalStorageCheck  = ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE);
+
+        Log.d("DEBUG","EXLOG:" + readPhoneStateCheck);
+        Log.d("DEBUG","EXLOG:" + cameraCheck );
+        Log.d("DEBUG","EXLOG:" + writeExternalStorageCheck);
+        Log.d("DEBUG","EXLOG:" + readExternalStorageCheck);
+
+        // 권한 체크 이미 얻은 권한은 0 이외에는 -1
+        // 권한이 있거나, 있거나 있거나
+        if( readPhoneStateCheck == PackageManager.PERMISSION_GRANTED
+                && cameraCheck == PackageManager.PERMISSION_GRANTED
+                && writeExternalStorageCheck == PackageManager.PERMISSION_GRANTED
+                && readExternalStorageCheck == PackageManager.PERMISSION_GRANTED
+                && pref.getBoolean("ISOK", false) ){
+            mWebView.loadUrl(Constants.INITURL);    // 메인 페이지
+        }else{
+            mWebView.loadUrl(Constants.PERMISSIONURL);  // 권한 페이지
+        }
+    }
+
     public class AndroidBridge {
         //HTML 문서 내에서 JavaScript로 호출가능한 함수
         //브라우저에서 load가 완료되었을 때 호출하는 함수
@@ -436,14 +460,35 @@ public class MainActivity extends AppCompatActivity {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    Log.d("DEBUG","EXLOG:1111111111111111" );
                     setNativeSetting();
+                }
+            });
+        }
+
+        //접근권한 확인버튼 누를 시 실행
+        @JavascriptInterface
+        public void callAndroidPermissionOK(){
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (Build.VERSION.SDK_INT >= 23) {
+                        //마쉬멜로우 이상 버전일 경우
+                        checkPermission();
+                    }else{
+                        //마쉬멜로우 미만일 경우
+                        SharedPreferences pref = getSharedPreferences("CHECKPERMISSIONURL", MODE_PRIVATE);
+                        SharedPreferences .Editor editor = pref.edit();
+                        editor.putBoolean("ISOK", true);
+                        editor.commit();
+                        goInitPage();
+                    }
                 }
             });
         }
 
         @JavascriptInterface
         public void callAndroidDeviceInfo() {
-            //webView.loadUrl("javascript:setLocation('"+ location.getLongitude()+"','"+ location.getLatitude()+"');");
             Log.d("regId", Constants.gcmRegId);
 
             handler.post(new Runnable() {
@@ -456,7 +501,6 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void callAndroidLocationInfo() {
-            //webView.loadUrl("javascript:setLocation('"+ location.getLongitude()+"','"+ location.getLatitude()+"');");
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -484,14 +528,43 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public void setAutoLoginNo() {
-            CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(mWebView.getContext());
-            CookieManager cookieManager = CookieManager.getInstance();
-            cookieManager.setAcceptCookie(true);
-            cookieManager.removeSessionCookie();
-            cookieManager.removeAllCookie();
-            cookieSyncManager.sync();
+            removeCookies();
         }
 
+    }
+
+    private void checkPermission() {
+
+        PermissionListener permissionlistener = new PermissionListener() {
+            @Override
+            public void onPermissionGranted() {
+//                Toast.makeText(MainActivity.this, "Permission Granted", Toast.LENGTH_SHORT).show(); e.getMessage()
+                SharedPreferences pref = getSharedPreferences("CHECKPERMISSIONURL", MODE_PRIVATE);
+                SharedPreferences .Editor editor = pref.edit();
+                editor.putBoolean("ISOK", true);
+                editor.commit();
+                goInitPage();
+            }
+
+
+            @Override
+            public void onPermissionDenied(ArrayList<String> deniedPermissions) {
+//                Toast.makeText(MainActivity.this, "Permission Denied\n" + deniedPermissions.toString(), Toast.LENGTH_SHORT).show();
+                finish();
+            }
+
+
+        };
+
+        TedPermission.with(this)
+                .setPermissionListener(permissionlistener)
+                .setRationaleTitle(R.string.rationale_title)
+                .setRationaleMessage(R.string.rationale_message)
+                .setDeniedTitle(R.string.denied_title)
+                .setDeniedMessage(R.string.denied_message)
+                .setGotoSettingButtonText("설정보기")
+                .setPermissions(Manifest.permission.READ_PHONE_STATE, Manifest.permission.CAMERA,  Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                .check();
     }
 
     /**
@@ -514,6 +587,25 @@ public class MainActivity extends AppCompatActivity {
         );
         return imageFile;
     }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        removeCookies();
+    }
+
+    public void removeCookies(){
+        if (mWebView != null) {
+            CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(mWebView.getContext());
+            CookieManager cookieManager = CookieManager.getInstance();
+            cookieManager.setAcceptCookie(true);
+            cookieManager.removeSessionCookie();
+            cookieManager.removeAllCookie();
+            cookieSyncManager.sync();
+        }
+    }
+
+
 
     @Override
     public void  onBackPressed() {
@@ -540,7 +632,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void setNativeSetting() {
-
 //        mEdit_signedMsg = (EditText)findViewById(R.id.result_text);
 //        mEdit_vidInfoMsg = (EditText)findViewById(R.id.Edit_vidInfoMsg);
         //////////////////////////////////////////////////////////////
@@ -549,6 +640,8 @@ public class MainActivity extends AppCompatActivity {
         // Permission Check
         int aWritePermissionCheck = ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
         int aReadPermissionCheck  = ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE);
+
+        Log.d("DEBUG","EXLOG:2222222222222" );
 
         // 권한 없을 경우 사용자에게 권한 요청
         if(aWritePermissionCheck != PackageManager.PERMISSION_GRANTED || aReadPermissionCheck != PackageManager.PERMISSION_GRANTED) {
@@ -562,17 +655,20 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        Log.d("DEBUG","EXLOG:333333333333333" );
         // 서버인증서 PEM 값 호출하여 조회
         getServerCertPEM();
 
+
+        //
         // XecureSmart
         mXecureSmart = XecureSmart.getInstance();
-        //
         initializeAgent();
+
 
         // XecureKeypad 설정 (주민번호 입력 용)
         // setE2E_XKeyPad();
-        callSignDataWithVIDAsync();
+//        callSignDataWithVIDAsync();
     }
     // 서버인증서 PEM 값 반환
     private void getServerCertPEM() {
@@ -586,6 +682,7 @@ public class MainActivity extends AppCompatActivity {
         //
         mXecureSmart.SetAttribute("id", "XecureWeb" );
         mXecureSmart.SetAttribute("type", "null" );
+        //"MIIDqzCCApOgAwIBAgICDU4wDQYJKoZIhvcNAQEFBQAwgZIxCzAJBgNVBAYTAktSMR4wHAYDVQQKExVTb2Z0Zm9ydW0gQ29ycG9yYXRpb24xHjAcBgNVBAsTFVNlY3VyaXR5IFJORCBEaXZpc2lvbjEcMBoGA1UEAxMTU29mdGZvcnVtIFB1YmxpYyBDQTElMCMGCSqGSIb3DQEJARYWY2FtYXN0ZXJAc29mdGZvcnVtLmNvbTAeFw0xNzA1MTcwNjA3MzJaFw0yMjA1MTYwNjA3MzJaMFgxCzAJBgNVBAYTAktSMQ0wCwYDVQQKDAR0ZXN0MQ0wCwYDVQQLDAR0ZXN0MQ0wCwYDVQQDDAR0ZXN0MRwwGgYJKoZIhvcNAQkBFg10ZXN0QHRlc3QuY29tMIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgF7b+1hkS/PJzDAsLDBQp4n80xMknloopckKtz+43y4cmLLS9aqFS4Eir3F8hkKvrShCN2LH7eTQCX0r2mid8IaweJ6azOxeZ06KVEKOxquBGYRn4Y10bT2UU0PtxjqtZv0Ay2++uybyI6Ggf2bpIeVtUjiWorZgkcHZfhiOLWUtAgMBAAGjgcgwgcUwHwYDVR0jBBgwFoAULkmrJ4royK+XdTfei3S7JA4NJ18wHQYDVR0OBBYEFOH6c0HaTtXAih8BCl6M0YO3xnPiMAsGA1UdDwQEAwIEsDAMBgNVHRMBAf8EAjAAMGgGA1UdHwRhMF8wXaBboFmGV2xkYXA6Ly9sZGFwLnNvZnRmb3J1bS5jby5rcjozODkvY249c2Usbz1zb2Z0Zm9ydW0sYz1rcj9jZXJ0aWZpY2F0ZVJldm9jYXRpb25saXN0O2JpbmFyeTANBgkqhkiG9w0BAQUFAAOCAQEAEjbWxgm3/1Im34vrMXiZOQd0McKbyPn+0KcRjYz+dEUKLV+sf8xt3e0Enre24HYLXVLATrjlgb7ilhcNimkHAS+ct5gRjnmcCEt3ENA/TIdSexkXU92i9HM78YfAi1vPcwALk5f7LGquU0Q5kufSdtyvEm3ChP6JX8eOzbh9DhNuKOSmotFOGA7GRR7HuyVro19phEEYyvi2zERZy0VFsyJK12zajB7yeoHuwnSfJs9vokydmZNmAWiXy3edMip/H+xI0p3DqcUUqqGq/aW0cw8HDjPTtF+2aBgCviAC/RhSCy37oyBLmWd0F7U53C94D1ejvu/Co+uAhEUjCD44pw=="
         mXecureSmart.SetAttribute("license", "3082072b020101310b300906052b0e03021a05003082010706092a864886f70d010701a081f90481f6313a6d6572637572792e736f6674666f72756d2e636f2e6b723a5665726966795369676e6564446174612c46696c655369676e2c46696c655665726966792c4d756c746946696c655369676e2c46696c655369676e416e645665726966792c46696c65456e76656c6f702c46696c654465456e76656c6f702c46696c65436c6561722c46696c655a69702c46696c65556e5a69702c46696c655369676e344f454d2c4d756c746946696c655369676e344f454d2c5369676e44617461434d535769746848544d4c2c5369676e44617461434d535769746848544d4c45782c56657269667944657461636865645369676e656444617461a0820467308204633082034ba003020102020107300d06092a864886f70d01010505003077310b3009060355040613024b52311e301c060355040a1315536f6674666f72756d20436f72706f726174696f6e3121301f06035504031318536f6674666f72756d20526f6f7420417574686f726974793125302306092a864886f70d010901161663616d617374657240736f6674666f72756d2e636f6d301e170d3034303431393030303030305a170d3333303131333030303030305a308192310b3009060355040613024b52311e301c060355040a1315536f6674666f72756d20436f72706f726174696f6e311e301c060355040b1315536563757269747920524e44204469766973696f6e311c301a06035504031313536f6674666f72756d205075626c69632043413125302306092a864886f70d010901161663616d617374657240736f6674666f72756d2e636f6d30820121300d06092a864886f70d01010105000382010e00308201090282010043340b4e1f2f30d6634c818e9fa4b35c199e0628503dbe0d1f5ad2c05890a918408dc330c991083bc7cdfc50021303c04afab4cb522d22fced11d1be6559835f1f000d466120cff97a2a80e4fdf972ac127f9bb8e8ddb84974323e4cb822c5f15b22f82da3de6ef61a0b6798ca49a85af3d8f8298912b4d26411e2e1635c081a3306931716c5e56b279c4d36068a4b645c10aa582693086e14132ba67fb03526312790261f9c641993e2ffc3fd9e8df3efebfddecd722e874d6366ad1252ac0d8bddb5674533cc2717a7342e5cfb18f8a301e7196ca33d6c3bb7e1f1e4bee34f5358af6ae0fd52a9fc3bdd4925f5eab7db6628e24738f6c882bb0aaa0e10afbf0203010001a381de3081db301f0603551d2304183016801409b5e27e7d2ac24a8f56bb67accebb93f5318fd3301d0603551d0e041604142e49ab278ae8c8af977537de8b74bb240e0d275f300e0603551d0f0101ff04040302010630120603551d130101ff040830060101ff02010030750603551d1f046e306c306aa068a06686646c6461703a2f2f6c6461702e736f6674666f72756d2e636f6d3a3338392f434e3d58656375726543524c505542432c4f553d536563757269747920524e44204469766973696f6e2c4f3d536f6674666f72756d20436f72706f726174696f6e2c433d4b52300d06092a864886f70d010105050003820101003ce700a0492b225b1665d9c73d84c34f7a5faad7b397ed49231f030e4e0e91953a607bd9006425373d490ef3ba1cf47810ca8c22fabe0c609f93823efdede64744458e910267f9f857c907318e286da6c131c9dd5fada43fd8cfdf6bd1b1b239338cea83eb6b6893b88fbcfd8e86a677b7270ad96be5a82b40569efc2dda6df4bcd642d067183186d6cace6c8f73b80f30b57acb3bcd5cbbc51307922d5edb38cb0d90c3917a8e37534183ba10f403c1c034287f39442df795050f39d78ddad97da8a43f02d7641549af9b5d68908e49faa8a1597cfed4a43baadd42c8fe4fd44c96d314df56147b8a7fa6ba65ffdee9ed3a5da52ef9ac7f9ca5afb633e1ccdf318201a13082019d020101307c3077310b3009060355040613024b52311e301c060355040a1315536f6674666f72756d20436f72706f726174696f6e3121301f06035504031318536f6674666f72756d20526f6f7420417574686f726974793125302306092a864886f70d010901161663616d617374657240736f6674666f72756d2e636f6d020107300706052b0e03021a300d06092a864886f70d0101050500048201002a722081e8f73fa00f39b75247111e06e9cd1a68e822b63f0e77bc814b219eb07d63785c56b5f18de4fcaf79011297e01fad3d908841f51e33b47f6ca72e5ca17df41622246a1442380b05ff03d362b78a735509d0b30df63e08075b1cdc71f28891ed3e442eb5794486f267573c03d273e88b9ab1406a62795545f962c67cf2cf4c899f549523df0a52ed1d4649099014c4f8cd45856dab00f91c003c004cdc7ce3c2c1a4bd7f4ed609e76028252c9bd7eacb6553b91bead9a9b6e7c7766cdd45813659f43d1147d0db3837f00280f3644b11d68e870f0c306acff6130e20e644ac01f9ca26c496342080d08e06bdb58af7bba99cbafc11bc5f5dbbbae330e0" );
         mXecureSmart.SetAttribute("storage", "hard,removable,pkcs11" );
         mXecureSmart.SetAttribute("sec_option", "0:hard:iccard" );
@@ -604,13 +701,16 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(URL... params) {
+
+
             //
             String aResult = "";
             //
             HttpURLConnection aHttp = null;
             try {
                 //
-                String urlString = "http://" + hostUrl + ":" + hostPort + "/xecuresmart/emkim/getServerCert.jsp" + "?" + "charset=utf8";
+                String urlString = "http://" + hostUrl+ "/anysign/jsp/vid2.jsp" + "?" + "charset=utf8";
+                urlString = "http://" + Constants.XAS_BASE_DOMAIN + "/anysign/jsp/vid2.jsp";
                 //
                 URL aURL = new URL(urlString);
                 //
@@ -624,7 +724,11 @@ public class MainActivity extends AppCompatActivity {
                 // 전송방식 설정 (GET, POST)
                 aHttp.setRequestMethod("GET");
                 // 서버에게 웹에서 <Form> 으로 값이 넘어온 거소가 같은 방식으로 처리하는 것을 알려줌
-                aHttp.setRequestProperty("content-type", "application/x-www-form-urlencoded");
+                aHttp.setRequestProperty("content-type", "text/plain");
+                aHttp.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36");
+                aHttp.setRequestProperty("Connection", "keep-alive");
+                aHttp.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
+
                 // 서버로 값 전송
                 StringBuffer aBuffer = new StringBuffer();
                 //
@@ -636,6 +740,8 @@ public class MainActivity extends AppCompatActivity {
                 //
                 int aResCode = aHttp.getResponseCode();
                 //
+
+                Log.d("DEBUG","aResCode:"+aResCode +" urlString:" +urlString);
                 if (aResCode == HttpURLConnection.HTTP_OK) {
                     //
                     try {
@@ -654,23 +760,30 @@ public class MainActivity extends AppCompatActivity {
                         }
                         //
                         aResult = axBuilder.toString();
+
                     } catch (IOException e) {
                         //
+                        Log.d("emkim", "Exception === " + e.getMessage());
+                        //Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 }
             } catch(MalformedURLException e) {
                 //
                 Log.d("emkim", "MalformedURLException!!!!!!!!!!!!!!!!!!!!!!!!");
+//                Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
             } catch(IOException e) {
                 //
                 Log.d("XecureSmart", "IOException on http connection");
+//                Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
             } catch(Exception e) {
                 //
                 Log.d("emkim", "Exception === " + e.getMessage());
+//                Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
             } finally {
                 //
                 //dismissDialog(DIALOG_BLOCK_ENC);
             }
+            Log.d("emkim", "aResult === " +aResult );
             return aResult;
         }
 
@@ -684,7 +797,11 @@ public class MainActivity extends AppCompatActivity {
                 //
                 result = result.trim();
                 //
-                mPEMVal = rePlaceString(result);
+//                mPEMVal = rePlaceString(result);
+                mPEMVal = result;
+                Log.d("emkim", "mPEMVal:" + mPEMVal);
+
+                callSignDataWithVIDAsync();
             }
         }
     }
@@ -693,28 +810,38 @@ public class MainActivity extends AppCompatActivity {
     // 서버인증서 자바스크립트 변수 부분 제거
     public String rePlaceString(String targetString) {
         String aResult = "";
-        aResult = targetString.replaceAll("var s = '';", "").replaceAll("s [+][=] '", "").replaceAll("\\\\", "").replaceAll("n';", "").replaceAll("';", "");
+//        aResult = targetString.replaceAll("var s = '';", "").replaceAll("s [+][=] '", "")
+//                .replaceAll("\\\\", "").replaceAll("n';", "").replaceAll("';", "")
+//                .replaceAll("\\\n", "");
+//        aResult = aResult.substring(0, aResult.indexOf("var session = \""));
+//        aResult = aResult.replaceAll("-----BEGIN CERTIFICATE-----", "-----BEGIN CERTIFICATE-----\\\n")
+//                .replaceAll("-----END CERTIFICATE-----", "\\\n-----END CERTIFICATE-----");
+//        Log.d("CERTIFICATE", "aResult : "+aResult);
+
+        aResult = targetString.replaceAll("var s = '';", "").replaceAll("s [+][=] '", "")
+                .replaceAll("\\\\", "").replaceAll("n';", "").replaceAll("';", "");
+
         return aResult;
     }
 
 
     public void callSignDataWithVIDAsync() {
-        Log.d("DEBUG", "+++++++++++++++++++++++++++++++ callSignDataWithVIDAsync S +++++++++++++++++++++++++++++++ ");
+//        Log.d("DEBUG", "+++++++++++++++++++++++++++++++ callSignDataWithVIDAsync S +++++++++++++++++++++++++++++++ ");
         try {
             //
-            Method aMethod = MainActivity.class.getDeclaredMethod("testSignDataWithVID");
+            Method aMethod = MainActivity.class.getDeclaredMethod("signDataWithVID");
             //
             XCoreWrapperAsyncParam aXCoreWrapperParam = new XCoreWrapperAsyncParam(aMethod, this);
             new XCoreWrapperAsyncCaller().execute(aXCoreWrapperParam);
         } catch (NoSuchMethodException e) {
             //Log.d("XecureSmart", "NoSuchMethodException in Asyncronous method");
         }
-        Log.d("DEBUG", "+++++++++++++++++++++++++++++++ callSignDataWithVIDAsync E +++++++++++++++++++++++++++++++ ");
+//        Log.d("DEBUG", "+++++++++++++++++++++++++++++++ callSignDataWithVIDAsync E +++++++++++++++++++++++++++++++ ");
     }
 
-    public void testSignDataWithVID() {
+    public void signDataWithVID() {
         //
-        Log.d("DEBUG", "+++++++++++++++++++++++++++++++ testSignDataWithVID S +++++++++++++++++++++++++++++++ ");
+        Log.d("DEBUG", "+++++++++++++++++++++++++++++++ signDataWithVID S +++++++++++++++++++++++++++++++ ");
         mPlainMsg="";
         //mPlainMsg += mEdit_plainMsg.getText();
 
@@ -734,9 +861,12 @@ public class MainActivity extends AppCompatActivity {
         // 7. 서버PEM 으로 전자봉투 수행 (VidInfo 데이터 생성)
         // 8. SignDataWithVID 는 전자서명 데이터만 리턴
         //    (VidInfo 데이터는 XecsureSmart.getVidInfo() 별도로 호출해서 리턴)
-        Log.d("DEBUG", "+++++++++++++++++++++++++++++++ testSignDataWithVID +++++++++++++++++++++++++++++++ " + mAcceptCert + " "+ mPlainMsg + " "+ mPEMVal+ " "+ mSignOption);
+        Log.d("DEBUG", "+++++++++++++++++++++++++++++++ signDataWithVID SSS +++++++++++++++++++++++++++++++ mAcceptCert:[" + mAcceptCert + "]");
+        Log.d("DEBUG", "+++++++++++++++++++++++++++++++ signDataWithVID SSS +++++++++++++++++++++++++++++++ mPlainMsg:["+ mPlainMsg + "]");
+        Log.d("DEBUG", "+++++++++++++++++++++++++++++++ signDataWithVID SSS +++++++++++++++++++++++++++++++ mPEMVal:["+ mPEMVal+ "]");
+        Log.d("DEBUG", "+++++++++++++++++++++++++++++++ signDataWithVID SSS +++++++++++++++++++++++++++++++ mSignOption:["+ mSignOption + "]");
         mSignedMsg = mXecureSmart.SignDataWithVID(
-                "",             // 1 : XgateAddr     (Default : "")
+                mXgateAddr,             // 1 : XgateAddr     (Default : "")
                 mAcceptCert,    // 2 : AcceptCert
                 mPlainMsg,      // 3 : Plain Msg
                 mPEMVal,        // 4 : Server PEM
@@ -751,7 +881,7 @@ public class MainActivity extends AppCompatActivity {
 //                mEdit_signedMsg.setText(mSignedMsg);
 //                mEdit_vidInfoMsg.setText(mVidInfoMsg);
                 // 인증서 결과 출력
-                mWebView.loadUrl("javascript:androidAuthResult('" + mSignedMsg + "', '" + mVidInfoMsg + "')");
+                mWebView.loadUrl("javascript:Sign_with_vid_user_Callback('" + mSignedMsg + "', '" + mVidInfoMsg + "')");
                 Log.d("DEBUG","mSignedMsg:"+mSignedMsg);
                 Log.d("DEBUG","mVidInfoMsg:"+mVidInfoMsg);
                 Log.d("DEBUG","mAcceptCert:"+mAcceptCert);
@@ -760,52 +890,6 @@ public class MainActivity extends AppCompatActivity {
                 //dismissDialog(DIALOG_SignData);
             }
         });
-        Log.d("DEBUG", "+++++++++++++++++++++++++++++++ testSignDataWithVID E +++++++++++++++++++++++++++++++ ");
-    }
-
-    public void testSignDataCMS() {
-        //
-        mPlainMsg="";
-        mPlainMsg += mEdit_plainMsg.getText();
-
-        // XecureSmart
-        mXecureSmart = XecureSmart.getInstance();
-
-        // 전자서명 옵션 변경 (SignDataCMS : 0 사용 / SignDataWithVID : 20 사용)
-        mSignOption = 0;
-
-        // 1. 인증서 리스트 오픈
-        //     - 인증서 선택 (아이템클릭)
-
-        // 2. 인증서 상세 화면
-        //     - EditText 클릭
-
-        // 3. 키패드 표시
-        // 4. 비밀번호 입력
-        // 5. 비밀번호 검증
-        // 6. 검증 완료 (비밀번호 일치) -> 전자서명 데이터 생성
-        // 7. 서버PEM 으로 전자봉투 수행 (VidInfo 데이터 생성)
-        // 8. SignDataWithVID 는 전자서명 데이터만 리턴
-        //    (VidInfo 데이터는 XecsureSmart.getVidInfo() 별도로 호출해서 리턴)
-        mSignedMsg = mXecureSmart.SignDataCMS(  "", 			// 1 : XgateAddr     (Default : "")
-                mAcceptCert, 	// 2 : AcceptCert
-                mPlainMsg, 		// 3 : Plain Msg
-                mSignOption, 	// 5 : Sign Option   (Default : 0)
-                "", 			// 6 : Sign Desc     (Default : "")
-                5);				// 7 : Pwd Try Limit
-        //
-        MainActivity.this.runOnUiThread( new Runnable() {
-            public void run() {
-                //인증서 결과
-//                mEdit_signedMsg.setText(mSignedMsg);
-                mWebView.loadUrl("javascript:androidAuthResult('" + mSignedMsg + "', '" + mVidInfoMsg + "')");
-                Log.d("DEBUG","mSignedMsg:"+mSignedMsg);
-                Log.d("DEBUG","mVidInfoMsg:"+mVidInfoMsg);
-                Log.d("DEBUG","mAcceptCert:"+mAcceptCert);
-                Log.d("DEBUG","mPlainMsg:"+mPlainMsg);
-                Log.d("DEBUG","mSignOption:"+mSignOption);
-                //dismissDialog(DIALOG_SignData);
-            }
-        });
+        Log.d("DEBUG", "+++++++++++++++++++++++++++++++ signDataWithVID E +++++++++++++++++++++++++++++++ ");
     }
 }

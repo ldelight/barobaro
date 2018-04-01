@@ -24,7 +24,7 @@ import com.softforum.xecurekeypad.XKCoreWrapperToJni;
 public class SplashActivity extends Activity {
 
     final static int RESOURCE_UPDATE_DIALOG = 1;
-    protected 	int	 mSplashTime = 1000;
+    protected 	int	 mSplashTime = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

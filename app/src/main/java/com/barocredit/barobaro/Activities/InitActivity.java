@@ -28,6 +28,8 @@ import com.barocredit.barobaro.Common.EnviromentUtil;
 import com.barocredit.barobaro.Common.MessageUtil;
 import com.barocredit.barobaro.R;
 
+import com.nprotect.IxSecureManager;
+import com.nprotect.security.inapp.IxSecureManagerHelper;
 import com.softforum.xas.XecureAppShield;
 import com.softforum.xecure.XecureSmart;
 import com.softforum.xecure.util.EnvironmentConfig;
@@ -81,6 +83,9 @@ public class InitActivity extends Activity {
     private Context mContext = this;
     private Activity mActivity;
 
+    //nProtect 변수
+    public static final int REQUEST_CODE_SPLASH = 1;
+    private IxSecureManagerHelper mSecureMngHelper = IxSecureManagerHelper.getInstance();
 
 
 
@@ -90,9 +95,108 @@ public class InitActivity extends Activity {
         setContentView(R.layout.activity_init);
         mContext = this.getApplicationContext();
         mActivity = this;
-        // 백신 체크
-        // XecureAppShield 체크
-        appIntegrityVerify();
+        // 백신 초기화
+        initSecure();
+        // 백신 시작
+        startSecure();
+//        goMainActivity(); //for testing
+    }
+
+
+    private void startSecure() {
+
+        dialog = new ProgressDialog(InitActivity.this);
+        dialog.setMessage("악성코드 검사 중입니다.");
+
+        dialog.setIndeterminate(true);
+        dialog.setCancelable(false);
+        dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+
+            public void onCancel(DialogInterface dialog) {
+                doProgress.cancel(true);
+            }
+        });
+//        dialog.show();
+
+        mSecureMngHelper = IxSecureManagerHelper.getInstance();
+        mSecureMngHelper.setShowSplash(false);
+        mSecureMngHelper.setUseSplashActivity(false, REQUEST_CODE_SPLASH);
+        IxSecureManagerHelper.IxSecureEventListener secureEvtListener = new IxSecureManagerHelper.IxSecureEventListener() {
+            @Override
+            public void onStatusChanged(int status) {
+                // 상태 변경
+                switch(status){
+                    case IxSecureManagerHelper.STATUS_SERVICE_END:  // 서비스 완료
+                        setStatusText("서비스 완료");
+//                        dialog.dismiss();
+                        break;
+                    case IxSecureManagerHelper.STATUS_SERVICE_START:    // 서비스 시작
+                        setStatusText("서비스 시작");
+                        break;
+                    case IxSecureManagerHelper.STATUS_UPDATE_START: // 업데이트 시작
+                        setStatusText("업데이트 시작");
+                        break;
+                    case IxSecureManagerHelper.STATUS_UPDATE_FINISH:    // 업데이트 완료
+                        setStatusText("업데이트 완료");
+                        break;
+                    case IxSecureManagerHelper.STATUS_SCAN_START:   // 악성코드 검사 시작
+                        setStatusText("악성코드 검사 시작");
+                        break;
+                    case IxSecureManagerHelper.STATUS_SCAN_FINISH:  // 악성코드 검사 완료
+                        setStatusText("악성코드 검사 완료");
+                        // XecureAppShield 체크
+                        appIntegrityVerify();
+                        break;
+                    case IxSecureManagerHelper.STATUS_UPDATE_TIMEOUT:   // 업데이트 타임아웃
+                        setStatusText("업데이트 타임아웃");
+                        break;
+                }
+            }
+
+            @Override
+            public void onMalwareFound(int malwareCount) {
+                // 악성 코드 발견 횟수
+                if(malwareCount > 0){
+                    setStatusText("악성 코드가 " + malwareCount + "건 발견되었습니다.");
+                    secureStop();
+                    finishApp("악성 코드가 " + malwareCount + "건 발견되어 앱을 종료합니다.");
+                }
+            }
+
+            @Override
+            public void onRealtimeMalwareFound(String pkgName) {
+                // 악성 코드 명
+                setStatusText("악성 코드 " + pkgName + "이(가) 발견되었습니다.");
+                secureStop();
+                finishApp("악성 코드가 " + pkgName + "이(가) 발견되어 앱을 종료합니다.");
+            }
+        };
+
+        mSecureMngHelper.setEventListener(secureEvtListener); // 이벤트 리스너 설정
+        mSecureMngHelper.start(mActivity);     // 백신 서비스 시작
+    }
+    public void secureStop(){
+//        mSecureMngHelper = IxSecureManagerHelper.getInstance();
+        mSecureMngHelper.stop(mActivity);
+    }
+
+    public void finishApp(String message){
+        MessageUtil.alertDialog(mActivity, message, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        }, false);
+    }
+
+    private void setStatusText(String text){
+        TextView tv_status = (TextView)findViewById(R.id.tv_status);
+        tv_status.setText("" + text);
+    }
+
+    private void initSecure() {
+        IxSecureManager.initLicense(getApplicationContext(), Constants.NPROTECT_LICENSE_KEY, Constants.NPROTECT_USER_ID);
+//        mSecureMngHelper= IxSecureManagerHelper.getInstance();
     }
 
     public void onResume() {
@@ -120,12 +224,12 @@ public class InitActivity extends Activity {
                 Constants.XAS_APPVER,
                 Constants.XAS_LIVE_UPDATE
         );
-
         doProgress = new DoProgress();
         doProgress.execute();
     }
 
     private class DoProgress extends AsyncTask<Integer, Void, Integer> {
+
 
         @Override
         protected void onPreExecute() {
@@ -141,7 +245,7 @@ public class InitActivity extends Activity {
                     doProgress.cancel(true);
                 }
             });
-            dialog.show();
+//            dialog.show();
 
             super.onPreExecute();
         }
@@ -230,7 +334,7 @@ public class InitActivity extends Activity {
 //            Toast.makeText(getApplicationContext(), "<" + result + "> :" + mErrorMessage, Toast.LENGTH_LONG).show();
 
             TextView tv_status = (TextView)findViewById(R.id.tv_status);
-            tv_status.setText("" + mErrorMessage);
+
 
             dialog.dismiss();
             doProgress.cancel(true);
@@ -249,17 +353,19 @@ public class InitActivity extends Activity {
 //                XecureAppShield.getInstance().getToken();
 //                Toast.makeText(getApplicationContext(), "<" + result + "> :" + XecureAppShield.getInstance().getToken() + " checkToken :" +checkToken (), Toast.LENGTH_LONG).show();
 //                checkToken (); // 2차 검증은 비즈서버쪽에서 구현해 줘야 함 추후(;;)
+                tv_status.setText("무결성 검증이 완료 되었습니다." );
                 goMainActivity();
             }else {
-                /*
+//                goMainActivity(); // for Testing
+
+                tv_status.setText("'"+mErrorMessage + "' 으로 확인 되었습니다.");
                 MessageUtil.alertDialog(mActivity, "'"+mErrorMessage + "' 으로 확인되어 앱을 종료합니다.", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         finish();
                     }
                 }, false);
-                */
-                goMainActivity();
+
             }
         }
 

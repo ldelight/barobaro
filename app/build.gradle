@@ -46,5 +46,6 @@ dependencies {
     compile 'com.google.api-client:google-api-client-gson:+'
     implementation files('libs/libIncaCommon.jar')
     implementation files('libs/libIncaMobileSDK.jar')
+    compile 'gun0912.ted:tedpermission:2.0.0'
 }
 

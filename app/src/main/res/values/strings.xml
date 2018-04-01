@@ -1,6 +1,7 @@
 <resources>
-    <string name="app_name">barobaro</string>
-    <string name="status">조회중입니다.</string>
+    <string name="app_name">바로바로론</string>
+    <string name="status">모바일 백신 프로그램 설치 중입니다.\n 잠시만 기다리세요</string>
+    <string name="copyright">Copyright © 2018 by Baro Credit All Rights Reserved.</string>
     <string name="on_back_string">\'뒤로\' 버튼을 한번 더 누르시면 종료됩니다.</string>
 
     <string name="ok">확인</string>
@@ -52,4 +53,10 @@
 
     <string name="new_password_check_alert_message">※ 비밀번호는 10자리 이상으로, 숫자, 영문자, 특수문자( \', \", \\, | 제외)를 조합해야 합니다.</string>
     <!-- [XecureSmart] /////////////////////////////////////////////// -->
+
+    <string name="rationale_title">안내</string>
+    <string name="rationale_message">앱을 사용하기 위해서는 다음 권한 들이 필요합니다.</string>
+
+    <string name="denied_title">안내</string>
+    <string name="denied_message">앱을 사용하기 위해서는 모든 권한을 허가해야 합니다. 설정으로 이동 하시겠습니까?</string>
 </resources>
