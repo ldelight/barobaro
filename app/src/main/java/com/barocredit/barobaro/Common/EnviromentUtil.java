@@ -7,9 +7,12 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 
 import com.barocredit.barobaro.R;
+
+import java.util.List;
 
 /**
  * Created by ctest on 2018-03-11.
@@ -95,5 +98,45 @@ public class EnviromentUtil {
 
         if(appInfo != null) return true;
         else return false;
+    }
+
+
+    public boolean existPakage(Context context, String pakagename) {
+        boolean isExist = false;
+
+        PackageManager pkgMgr = context.getPackageManager();
+        List<ResolveInfo> mApps;
+        Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        mApps = pkgMgr.queryIntentActivities(mainIntent, 0);
+
+        try {
+            for (int i = 0; i < mApps.size(); i++) {
+                if(mApps.get(i).activityInfo.packageName.startsWith( pakagename )){
+                    isExist = true;
+                    break;
+                }
+            }
+        }
+        catch (Exception e) {
+            isExist = false;
+        }
+        return isExist;
+    }
+
+    public static void installAnySign(final Context context){
+        final String packageName = "com.softforum.xecureanysign";
+        Activity activity = (Activity)context;
+        if(!getApplicationInstalled(context, packageName)) {//앱이 없으면 실행
+            MessageUtil.confirmDialogOk(activity, activity.getString(R.string.msg_install_anysign), activity.getString(R.string.ok), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent marketLaunch = new Intent(Intent.ACTION_VIEW);
+                    marketLaunch.setData(Uri.parse("market://search?q=" + packageName ));
+                    context.startActivity(marketLaunch);
+                    dialog.dismiss();
+                }
+            }, activity.getString(R.string.finish), false);
+        }
     }
 }

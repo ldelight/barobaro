@@ -4,10 +4,13 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.pm.Signature;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -22,6 +25,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -40,7 +44,18 @@ import android.widget.Toast;
 
 import com.barocredit.barobaro.Common.Constants;
 import com.barocredit.barobaro.Common.BaroChromeClient;
+import com.barocredit.barobaro.Common.EnviromentUtil;
+import com.barocredit.barobaro.Common.RealPathUtil;
 import com.barocredit.barobaro.R;
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsConstants;
+import com.facebook.appevents.AppEventsLogger;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.appinvite.FirebaseAppInvite;
+import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
+import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
 import com.gun0912.tedpermission.PermissionListener;
 
 import com.gun0912.tedpermission.TedPermission;
@@ -56,6 +71,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -63,6 +79,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +88,9 @@ import java.util.Map;
 import static com.softforum.xecure.ui.crypto.SignCertSelectWindow.mSignOption;
 
 public class MainActivity extends AppCompatActivity {
+
+    private FirebaseAnalytics mFirebaseAnalytics;
+
     //기본 오브젝트
     WebView mWebView;
     private final Handler handler = new Handler();
@@ -82,11 +102,17 @@ public class MainActivity extends AppCompatActivity {
     private ValueCallback<Uri> mUploadMessage;
 
     // BACK 2번 클릭 시 종료 핸들러. 플래그
-    private Handler mHandler  = new Handler();
+    private Handler mHandler  = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            mFlag = false;
+        }
+    };
     private boolean mFlag = false;
 
     // 웹뷰 로딩 관련
     ProgressDialog mProgress;
+    private static final int INPUT_FILE_REQUEST_CODE = 1; //파일업로드 관련
 
     //
     private XecureSmart mXecureSmart;
@@ -161,15 +187,59 @@ public class MainActivity extends AppCompatActivity {
     String hostUrl = Constants.XAS_BASE_DOMAIN;
     String hostPort = "80";
 
+    Context mContext;
+    AppEventsLogger logger ; // 페이스북 관련
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mContext = this;
+        logger = AppEventsLogger.newLogger(mContext);
 //        checkPermission();
         //웹뷰 초기화 및 설정
         initWebView();
 //        setNativeSetting(); //for Testing
+        //애니싸인 설치 체크
+        EnviromentUtil.installAnySign(mContext);
+
+        // Obtain the FirebaseAnalytics instance.
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        analyticsFirebase();
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(this);
+//        FirebaseDynamicLinks.getDynamicLink();
+        FirebaseDynamicLinks.getInstance().getDynamicLink(getIntent())
+                .addOnSuccessListener(this, new OnSuccessListener<PendingDynamicLinkData>() {
+                    @Override
+                    public void onSuccess(PendingDynamicLinkData data) {
+                        if (data == null) {
+                            Log.d("DEBUG", "getInvitation: no data");
+                            return;
+                        }
+
+                        // Get the deep link
+                        Uri deepLink = data.getLink();
+
+                        // Extract invite
+                        FirebaseAppInvite invite = FirebaseAppInvite.getInvitation(data);
+                        if (invite != null) {
+                            String invitationId = invite.getInvitationId();
+                        }
+
+                        // Handle the deep link
+                        // ...
+                    }
+                })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("DEBUG", "getDynamicLink:onFailure", e);
+                    }
+                });
     }
+
 
     private void initWebView() {
         mWebView = (WebView)findViewById(R.id.webView);
@@ -187,7 +257,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, final String url) {
                 Log.d("url", "should overload url["+url+"]");
-                if (url.startsWith("tel:")) {
+                analyticsFirebase(url);
+                analyticsFacebook(url);
+                if (url.startsWith("intent://")) {
+                    try {
+                        Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+                        Intent existPackage = getPackageManager().getLaunchIntentForPackage(intent.getPackage());
+                        if (existPackage != null) {
+                            startActivity(intent);
+                        } else {
+                            Intent marketIntent = new Intent(Intent.ACTION_VIEW);
+                            marketIntent.setData(Uri.parse("market://details?id=" + intent.getPackage()));
+                            startActivity(marketIntent);
+                        }
+                        return true;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }else if (url.startsWith("tel:")) {
                     //tel:01000000000
                     Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
                     startActivity(intent);
@@ -206,14 +293,13 @@ public class MainActivity extends AppCompatActivity {
                     mProgress.setCancelable(false);
                     mProgress.show();
                     view.loadUrl(url);
-
                     if (mProgress.isShowing()) {
                         mProgress.dismiss();
                     }
-
                 }
                 return false;
             }
+
 
             // 웹페이지 로딩이 시작할 때 처리
             @Override
@@ -377,6 +463,9 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
+
+
         if(getIntent().getStringExtra("STARTURL") != null){
             mWebView.loadUrl(getIntent().getStringExtra("STARTURL"));
         }else{
@@ -466,6 +555,8 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+
+
         //접근권한 확인버튼 누를 시 실행
         @JavascriptInterface
         public void callAndroidPermissionOK(){
@@ -529,6 +620,12 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void setAutoLoginNo() {
             removeCookies();
+        }
+
+        @JavascriptInterface
+        public void callAnySign(String urlScheme){
+            mWebView.loadUrl("<script type='text/javascript'>'" + urlScheme + "';</script>");
+
         }
 
     }
@@ -610,7 +707,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void  onBackPressed() {
         //super.onBackPressed();
-        if (mWebView.getUrl().indexOf(Constants.INITURL) >= 0 ){
+        if(mWebView.canGoBack()){
+            mWebView.goBack();
+        }else if (mWebView.getUrl().indexOf(Constants.INITURL) >= 0 ){
             if(!mFlag) {
                 Toast.makeText(this, "'뒤로'버튼을 한번 더 누르시면 종료됩니다.", Toast.LENGTH_SHORT).show();    // 종료안내 toast 를 출력
                 mFlag = true;
@@ -891,5 +990,170 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         Log.d("DEBUG", "+++++++++++++++++++++++++++++++ signDataWithVID E +++++++++++++++++++++++++++++++ ");
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intentdata) {
+        if (requestCode == INPUT_FILE_REQUEST_CODE && resultCode == RESULT_OK) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (mFilePathCallback == null) {
+                    super.onActivityResult(requestCode, resultCode, intentdata);
+                    return;
+                }
+                Uri[] results = new Uri[]{getResultUri(intentdata)};
+
+                mFilePathCallback.onReceiveValue(results);
+                mFilePathCallback = null;
+            } else {
+                if (mUploadMessage == null) {
+                    super.onActivityResult(requestCode, resultCode, intentdata);
+                    return;
+                }
+                Uri result = getResultUri(intentdata);
+
+                Log.d(getClass().getName(), "openFileChooser : "+result);
+                mUploadMessage.onReceiveValue(result);
+                mUploadMessage = null;
+            }
+        } else {
+            if (mFilePathCallback != null) mFilePathCallback.onReceiveValue(null);
+            if (mUploadMessage != null) mUploadMessage.onReceiveValue(null);
+            mFilePathCallback = null;
+            mUploadMessage = null;
+            super.onActivityResult(requestCode, resultCode, intentdata);
+        }
+    }
+
+    private Uri getResultUri(Intent data) {
+        Uri result = null;
+        if(data == null || TextUtils.isEmpty(data.getDataString())) {
+            // If there is not data, then we may have taken a photo
+            if(mCameraPhotoPath != null) {
+                result = Uri.parse(mCameraPhotoPath);
+            }
+        } else {
+            String filePath = "";
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                filePath = data.getDataString();
+            } else {
+                filePath = "file:" + RealPathUtil.getRealPath(this, data.getData());
+            }
+            result = Uri.parse(filePath);
+        }
+
+        return result;
+    }
+
+    /**
+     * This function assumes logger is an instance of AppEventsLogger and has been
+     * created using AppEventsLogger.newLogger() call.
+     */
+    /*    */
+    public void logSentFriendRequestEvent () {
+        logger.logEvent("sentFriendRequest");
+    }
+
+
+    private void analyticsFirebase(String url) {
+        Bundle bundle = new Bundle();
+        if(url.startsWith("tel:")){
+            bundle.putString(FirebaseAnalytics.Param.ITEM_ID,"전화상담");
+            mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.ADD_TO_CART, bundle);
+        }else if(url.contains("loaninfo")){
+            bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "대출상품소개");
+            mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.ADD_TO_WISHLIST, bundle);
+        }else if(url.contains("loan_simulation_info")){
+            bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "대출가능한도조회");
+            mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM_LIST, bundle);
+        }else if(url.contains("loanapplication/baro")){
+            bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "대출신청(신규)");
+            mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.BEGIN_CHECKOUT, bundle);
+        }else if(url.contains("loanapplication/simple")){
+            bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "대출신청(기존)");
+            mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+        }else if(url.contains("loancomplete/y/101658")){
+            bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "대출성공(바로신규)");
+            mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.ECOMMERCE_PURCHASE, bundle);
+        }else if(url.contains("loancomplete/y/100909")){
+            bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "대출성공(기존신규)");
+            mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.ECOMMERCE_PURCHASE, bundle);
+        }else if(url.contains("loancomplete/n")){
+            bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "대출부결");
+            mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.PURCHASE_REFUND, bundle);
+        }else if(url.contains("loaninfo")){
+            bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "대출성공(재대출)");
+            mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SHARE, bundle);
+        }
+    }
+
+    private void analyticsFirebase() {
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.ITEM_ID,"방문");
+        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.JOIN_GROUP, bundle);
+    }
+
+    private void analyticsFacebook(String url) {
+        Bundle params = new Bundle();
+        if(url.startsWith("tel:")){
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT, url);
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, url);
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_TYPE, "tel:");
+            params.putString(AppEventsConstants.EVENT_PARAM_CURRENCY, "KRW");
+            logger.logEvent(AppEventsConstants.EVENT_NAME_ADDED_TO_CART, 1, params);
+        }else if(url.contains("loaninfo")){
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_TYPE, "page");
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT, "대출상품소개");
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, "대출상품소개");
+            params.putString(AppEventsConstants.EVENT_PARAM_CURRENCY, "KRW");
+            logger.logEvent(AppEventsConstants.EVENT_NAME_VIEWED_CONTENT, 1, params);
+        }else if(url.contains("loan_simulation_info")){
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_TYPE, "page");
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT, "대출가능한도조회");
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, "대출가능한도조회");
+            params.putInt(AppEventsConstants.EVENT_PARAM_MAX_RATING_VALUE, 1);
+            logger.logEvent(AppEventsConstants.EVENT_NAME_RATED, 1, params);
+        }else if(url.contains("loanapplication/baro")){
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT, "대출신청(신규)");
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, "대출신청(신규)");
+            params.putInt(AppEventsConstants.EVENT_PARAM_SUCCESS, 1);
+            logger.logEvent(AppEventsConstants.EVENT_NAME_COMPLETED_TUTORIAL, params);
+        }else if(url.contains("loanapplication/simple")){
+            params.putString(AppEventsConstants.EVENT_PARAM_REGISTRATION_METHOD, "대출신청(기존)");
+            logger.logEvent(AppEventsConstants.EVENT_NAME_COMPLETED_REGISTRATION, params);
+        }else if(url.contains("loancomplete/y/101658")){
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT, "대출성공(바로신규)");
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, "대출성공(바로신규)");
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_TYPE, "page");
+            params.putInt(AppEventsConstants.EVENT_PARAM_NUM_ITEMS, 1);
+            params.putInt(AppEventsConstants.EVENT_PARAM_PAYMENT_INFO_AVAILABLE, 1);
+            params.putString(AppEventsConstants.EVENT_PARAM_CURRENCY, "KRW");
+            logger.logEvent(AppEventsConstants.EVENT_NAME_INITIATED_CHECKOUT, 1, params);
+        }else if(url.contains("loancomplete/y/100909")){
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT, "대출성공(기존신규)");
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, "대출성공(기존신규)");
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_TYPE, "page");
+            params.putInt(AppEventsConstants.EVENT_PARAM_NUM_ITEMS, 1);
+            params.putInt(AppEventsConstants.EVENT_PARAM_PAYMENT_INFO_AVAILABLE, 1);
+            params.putString(AppEventsConstants.EVENT_PARAM_CURRENCY, "KRW");
+            logger.logEvent(AppEventsConstants.EVENT_NAME_INITIATED_CHECKOUT, 1, params);
+        }else if(url.contains("loancomplete/n")){
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT, "대출부결");
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, "대출부결");
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_TYPE, "page");
+            logger.logEvent(AppEventsConstants.EVENT_NAME_SPENT_CREDITS, 1, params);
+        }else if(url.contains("loancomplete/y/101523")){
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT, "대출성공(재대출)");
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, "대출성공(재대출)");
+            params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_TYPE, "page");
+            BigDecimal purchaseAmout = new BigDecimal(1);
+            Currency currency = Currency.getInstance("KRW");
+            logger.logPurchase(purchaseAmout, currency, params);
+        }
+    }
+
+    private void analyticsFacebook() {
+        Bundle params = new Bundle();
+        params.putInt(AppEventsConstants.EVENT_PARAM_SUCCESS, 1);
+        logger.logEvent(AppEventsConstants.EVENT_NAME_ADDED_PAYMENT_INFO, params);
     }
 }

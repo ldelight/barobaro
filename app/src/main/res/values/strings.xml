@@ -12,6 +12,7 @@
     <string name="msg_update_failed">업데이트에 실패하였습니다. 잠시 후 다시 시도해주세요.</string>
     <string name="cancel">취소</string>
     <string name="msg_required_remove_old_app">최신 업데이트 버젼이 있습니다. 업데이트를 추가 설치 해주세요.</string>
+    <string name="msg_install_anysign">공인인증서 인증을 위해 애니싸인 앱을 설치합니다.</string>
 
     <!-- [XecureSmart] /////////////////////////////////////////////// -->
 
@@ -59,4 +60,8 @@
 
     <string name="denied_title">안내</string>
     <string name="denied_message">앱을 사용하기 위해서는 모든 권한을 허가해야 합니다. 설정으로 이동 하시겠습니까?</string>
+
+    <string name="facebook_app_id">868687506650608</string>
+    <string name="fb_login_protocol_scheme">fb868687506650608</string>
+
 </resources>

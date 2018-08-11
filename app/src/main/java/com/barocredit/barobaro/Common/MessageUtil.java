@@ -44,7 +44,16 @@ public class MessageUtil {
 		}
 	}
 
-	
-	
-	
+	public static void confirmDialogOk(Activity mActivity, String message, String positiveBtnTxt, DialogInterface.OnClickListener positiveListener, String negativeBtnTxt, boolean cancelable) {
+		try{
+			new AlertDialog.Builder(mActivity).setMessage(message)
+					.setPositiveButton(positiveBtnTxt, positiveListener)
+					.setCancelable(cancelable)
+					.show();
+		}catch (Exception e){
+			e.getStackTrace();
+			Log.d("DEBUG","EXCEPTION::" + e.getMessage());
+		}
+	}
+
 }

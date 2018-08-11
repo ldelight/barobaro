@@ -28,6 +28,8 @@ import com.barocredit.barobaro.Common.EnviromentUtil;
 import com.barocredit.barobaro.Common.MessageUtil;
 import com.barocredit.barobaro.R;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.nprotect.IxSecureManager;
 import com.nprotect.security.inapp.IxSecureManagerHelper;
 import com.softforum.xas.XecureAppShield;
@@ -64,12 +66,15 @@ import java.util.ArrayList;
 
 import static com.softforum.xecure.ui.crypto.SignCertSelectWindow.mSignOption;
 
-
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
 /**
  * Created by ctest on 2018-02-22.
  */
 
 public class InitActivity extends Activity {
+
+
 
     String mErrorMessage = new String();
 
@@ -92,14 +97,22 @@ public class InitActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if( Constants.isTest){ // 테스트
+            FirebaseMessaging.getInstance().subscribeToTopic("barobaroloanTest");
+        }else{                  // 운영
+            FirebaseMessaging.getInstance().subscribeToTopic("barobaroloan");
+        }
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(this);
+
         setContentView(R.layout.activity_init);
         mContext = this.getApplicationContext();
         mActivity = this;
-        // 백신 초기화
-        initSecure();
-        // 백신 시작
-        startSecure();
+        initSecure();// 백신 초기화
+        startSecure();// 백신 시작
 //        goMainActivity(); //for testing
+
+
     }
 
 
