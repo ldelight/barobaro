@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="zix_uninstall_activity_class">com.nprotect.security.inapp.ui.IxScanResultActivity</string>
+
+</resources>

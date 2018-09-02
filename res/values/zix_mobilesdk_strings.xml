@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="zix_scanresult_title">검사 결과</string>
+    <string name="zix_scanresult_malware_count">발견 된 악성앱 수 :&#160;</string>
+    <string name="zix_scanresult_delete_all">전체 삭제</string>
+    <string name="zix_scanresult_app">어플명 :&#160;</string>
+    <string name="zix_scanresult_diag">진단명 :&#160;</string>
+    
+    <string name="zix_notification_running_title">시스템 보호</string>
+    <string name="zix_notification_running_content">시스템이 보호 중입니다.</string>
+	
+    <string name="zix_alert_dialog_title">악성 앱 탐지</string>
+	<string name="zix_alert_dialog_message">악성 앱이 발견되었습니다.\n반드시 삭제하시기 바랍니다.</string>
+	<string name="zix_alert_dialog_btn_possitive">확인</string>
+	<string name="zix_alert_dialog_btn_negative">취소</string>
+	
+	<string name="zix_splash_activity_sdk_end">백신 서비스 종료</string>
+	<string name="zix_splash_activity_sdk_start">백신 서비스 시작</string>
+	<string name="zix_splash_activity_update_start">업데이트 중&#8230;</string>
+	<string name="zix_splash_activity_update_finish">업데이트 종료</string>
+	<string name="zix_splash_activity_update_timeout">네트워크가 불안정합니다.</string>
+	<string name="zix_splash_activity_scan_start">악성코드 검사 중&#8230;</string>
+	<string name="zix_splash_activity_scan_finish">악성코드 검사 종료</string>
+	<string name="zix_splash_activity_no_pattern">업데이트가 필요합니다.</string>
+
+</resources>

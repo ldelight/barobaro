@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="horizontal" android:layout_width="fill_parent"
+	android:layout_height="68dip" android:background="#ffffff"
+	>
+
+	<ImageView android:id="@+id/iconItem"
+	    android:contentDescription="@string/app_name"
+	    android:layout_width="48dip"
+	    android:layout_margin="10dip"
+		android:layout_height="48dip" android:padding="5dip"
+		android:scaleType="fitXY" android:layout_gravity="center_vertical" />
+
+		<TextView
+		    android:id="@+id/productname"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_alignTop="@+id/iconItem"
+		    android:layout_toRightOf="@+id/iconItem"
+		    android:ellipsize="end"
+		    android:gravity="left"
+		    android:maxLines="1"
+		    android:singleLine="true"
+		    android:textColor="#797979"
+		    android:textSize="16sp"
+		    android:textStyle="bold" />
+
+		<TextView
+		    android:id="@+id/appname"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_alignBottom="@+id/productname"
+		    android:layout_alignTop="@+id/productname"
+		    android:layout_toRightOf="@+id/productname"
+		    android:ellipsize="end"
+		    android:layout_marginRight="10dip"
+		    android:gravity="left"
+		    android:maxLines="1"
+		    android:singleLine="true"
+		    android:textColor="#ED7D28"
+		    android:textSize="16sp"
+		    android:textStyle="bold" />
+
+		<TextView
+		    android:id="@+id/virusname"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_alignBottom="@+id/iconItem"
+		    android:layout_below="@+id/productname"
+		    android:layout_toRightOf="@+id/iconItem"
+		    android:ellipsize="end"
+		    android:layout_marginRight="10dip"
+		    android:gravity="left"
+		    android:maxLines="1"
+		    android:singleLine="true"
+		    android:textColor="#797979"
+		    android:textSize="16sp"
+		    android:textStyle="bold" />
+
+</RelativeLayout>

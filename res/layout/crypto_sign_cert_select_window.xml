@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent"
+  android:orientation="vertical"
+  android:background="#FFFFFFFF"
+  >
+  
+    <!-- 
+    <com.softforum.xecure.ui.XTopView
+        android:id="@+id/top_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        subject="@string/sign_cert_select_window_title"
+        description="@string/button_confirm"
+    />
+     -->
+     
+	<!-- Top.Description -->
+	<TextView
+	    android:id="@+id/top_desc_text"
+	    style="@style/TextTopDesc"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:focusable="true" 
+	    android:focusableInTouchMode="true"
+	    android:text="@string/sign_cert_select_window_sign_desc"
+	    />
+
+   	<!-- Top.Main -->
+	<RelativeLayout
+		android:id="@+id/top_main_layout"
+		android:layout_width="fill_parent"
+		android:layout_height="40dp"
+		android:background="@drawable/shape_gradient_grey_topsubject"
+		>
+
+	    <!-- Top.Main.Subject -->
+
+		<TextView
+		    android:id="@+id/top_subject_text"
+		    style="@style/TextTopSubject"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_centerInParent="true"
+		    android:focusable="true"
+		    android:focusableInTouchMode="true"
+		    android:text="@string/sign_cert_select_window_title" />
+	    
+	    <!-- Top.Main.Icon -->
+	    <ImageView android:id="@+id/top_icon_image"
+			android:layout_width="31dp"
+			android:layout_height="31dp"
+			android:layout_alignParentLeft="true"
+			android:layout_alignParentBottom="true"
+	        />
+
+	    <!-- Top.Main.Button -->
+
+		<Button
+		    android:id="@+id/top_right_button"
+		    android:layout_width="60dp"
+		    android:layout_height="34dp"
+		    android:layout_alignParentBottom="true"
+		    android:layout_alignParentRight="true"
+		    android:padding="0dp"
+		    android:textColor="#FF000000"
+		    android:textSize="12sp"
+		    android:visibility="invisible" />
+ 
+	</RelativeLayout>
+	<!-- Top.Main End -->
+    
+    <Spinner android:id="@+id/select_media"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_margin="0dp"
+	    android:drawSelectorOnTop="true"
+	    android:layout_gravity="center_horizontal" 
+	    android:prompt="@string/xecure_smart_cert_mgr_cert_media_select"
+	    android:background="@android:drawable/btn_default"
+/>
+        
+	<ListView
+        android:id="@android:id/list"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		style="@style/List"
+    />
+
+</LinearLayout>

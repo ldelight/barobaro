@@ -1,0 +1,67 @@
+<resources>
+    <string name="app_name">바로바로론</string>
+    <string name="status">모바일 백신 프로그램 설치 중입니다.\n 잠시만 기다리세요</string>
+    <string name="copyright">Copyright © 2018 by Baro Credit All Rights Reserved.</string>
+    <string name="on_back_string">\'뒤로\' 버튼을 한번 더 누르시면 종료됩니다.</string>
+
+    <string name="ok">확인</string>
+    <string name="update">업데이트</string>
+    <string name="ignore">계속</string>
+    <string name="finish">종료</string>
+    <string name="msg_required_update">실행하시려면 업데이트가 필요합니다.</string>
+    <string name="msg_update_failed">업데이트에 실패하였습니다. 잠시 후 다시 시도해주세요.</string>
+    <string name="cancel">취소</string>
+    <string name="msg_required_remove_old_app">최신 업데이트 버젼이 있습니다. 업데이트를 추가 설치 해주세요.</string>
+    <string name="msg_install_anysign">공인인증서 인증을 위해 애니싸인 앱을 설치합니다.</string>
+
+    <!-- [XecureSmart] /////////////////////////////////////////////// -->
+
+    <string name="resource_initialize">리소스를 업데이트 중입니다.</string>
+
+    <!-- XecureSmartCertMgr -->
+    <string name="xecure_smart_cert_mgr_cert_media_select">인증서 위치 선택</string>
+    <string name="xecure_smart_cert_mgr_change_password_success">비밀번호 변경이 성공하였습니다.</string>
+    <string name="xecure_smart_cert_mgr_confirm_window">선택한 인증서가 영구히 삭제됩니다. 계속하시겠습니까?</string>
+    <string name="xecure_smart_cert_mgr_confirm_ok">확인</string>
+    <string name="xecure_smart_cert_mgr_confirm_cancel">취소</string>
+    <string name="xecure_smart_cert_mgr_confirm_caution">주의</string>
+
+    <!-- SignCertSelectWindow -->
+    <string name="sign_cert_select_window_title">인증서 선택</string>
+    <string name="sign_cert_select_window_sign_desc">서명에 사용할 인증서를 선택</string>
+
+    <!-- Error Message -->
+    <string name="requested_task_fail">요청한 작업이 실패하였습니다.</string>
+    <string name="requested_task_canceled">요청한 작업이 취소되었습니다.</string>
+
+    <string name="plugin_input_nothing">입력하신 내용이 없습니다.</string>
+    <string name="incorrect_confirm_password">새 비밀번호가 일치하지 않습니다.</string>
+
+    <string name="password_length_error">비밀번호는 최소 8자 이상입니다.</string>
+    <string name="password_syntax_error">비밀번호는 문자와 숫자를 조합하여야 합니다.</string>
+    <string name="password_renew_syntax_error">새 비밀번호와 기존 비밀번호가 일치합니다.</string>
+    <string name="newpassword_length_error">비밀번호는 최소 10자 이상입니다.</string>
+    <string name="newpassword_syntax_error">비밀번호는 숫자, 문자, 특수문자를 조합하여야 합니다.</string>
+    <string name="newpassword_invalid_error">\' \" \\ | 는 비밀번호로 쓰실수 없습니다.</string>
+
+    <string name="password">비밀번호</string>
+    <string name="new_password">새 비밀번호</string>
+    <string name="new_password_confirm">새 비밀번호 확인</string>
+
+    <!-- placeholder 관련 -->
+    <string name ="input_password">비밀번호 입력</string>
+    <string name ="input_new_password">새 비밀번호 입력</string>
+
+    <string name="new_password_check_alert_message">※ 비밀번호는 10자리 이상으로, 숫자, 영문자, 특수문자( \', \", \\, | 제외)를 조합해야 합니다.</string>
+    <!-- [XecureSmart] /////////////////////////////////////////////// -->
+
+    <string name="rationale_title">안내</string>
+    <string name="rationale_message">앱을 사용하기 위해서는 다음 권한 들이 필요합니다.</string>
+
+    <string name="denied_title">안내</string>
+    <string name="denied_message">앱을 사용하기 위해서는 모든 권한을 허가해야 합니다. 설정으로 이동 하시겠습니까?</string>
+
+    <string name="facebook_app_id">868687506650608</string>
+    <string name="fb_login_protocol_scheme">fb868687506650608</string>
+
+</resources>
