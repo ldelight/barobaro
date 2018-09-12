@@ -19,7 +19,7 @@
     <application
         android:name=".Activities.MainApplication01"
         android:allowBackup="true"
-        android:icon="@drawable/baro_logo"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
@@ -69,7 +69,15 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        <activity android:name=".Activities.MainActivity"></activity>
+        <activity android:name=".Activities.MainActivity">
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="http" android:host="appweb.barocredit.net" />
+                <data android:scheme="https" android:host="appweb.barocredit.net" />
+            </intent-filter>
+        </activity>
 
 
         <!-- [START] XecureSmart -->

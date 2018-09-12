@@ -30,7 +30,7 @@ public class Constants {
     public static String XAS_BASE_DOMAIN = "appwas.barocredit.net";
     public static String XAS_DOMAIN = "http://" + XAS_BASE_DOMAIN + "/xasService/";
     public static String XAS_APPID = "barocredit";
-    public static String XAS_APPVER = "1.4";
+    public static String XAS_APPVER = "1.5";
     public static boolean XAS_LIVE_UPDATE = true;
 
     //

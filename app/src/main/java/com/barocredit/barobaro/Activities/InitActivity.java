@@ -111,8 +111,6 @@ public class InitActivity extends Activity {
         initSecure();// 백신 초기화
         startSecure();// 백신 시작
 //        goMainActivity(); //for testing
-
-
     }
 
 

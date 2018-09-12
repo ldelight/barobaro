@@ -6,8 +6,8 @@ android {
         applicationId "com.barocredit.barobaro"
         minSdkVersion 15
         targetSdkVersion 25
-        versionCode 9
-        versionName "1.09"
+        versionCode 21
+        versionName "1.21"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled  true
 
