@@ -42,6 +42,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.barocredit.barobaro.BuildConfig;
 import com.barocredit.barobaro.Common.Constants;
 import com.barocredit.barobaro.Common.BaroChromeClient;
 import com.barocredit.barobaro.Common.EnviromentUtil;
@@ -253,6 +254,14 @@ public class MainActivity extends AppCompatActivity {
         String userAgent = mWebView.getSettings().getUserAgentString();
         mWebView.getSettings().setUserAgentString(userAgent + " " + Constants.USER_AGENT_STRING);
 
+        //쿠키 유지 설정
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mWebView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+            CookieManager cookieManager = CookieManager.getInstance();
+            cookieManager.setAcceptCookie(true);
+            cookieManager.setAcceptThirdPartyCookies(mWebView, true);
+        }
+
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, final String url) {
@@ -284,7 +293,7 @@ public class MainActivity extends AppCompatActivity {
                     Intent i = new Intent(Intent.ACTION_SENDTO, Uri.parse(url));
                     startActivity(i);
                     return true;
-                }  else {
+                } else {
                     Log.d("DEBUG","TEST:"+url);
 
                     mProgress = new ProgressDialog(activity);
@@ -327,6 +336,10 @@ public class MainActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 if (mProgress.isShowing()) {
                     mProgress.dismiss();
+                }
+                if(url.contains("appweb.barocredit.net/Contents/Setting/version")){
+                    Log.d("DEBUG","VERSION_NAME:2 "+url);
+                    mWebView.loadUrl("javascript:version('"+BuildConfig.VERSION_NAME+"')");
                 }
             }
 
