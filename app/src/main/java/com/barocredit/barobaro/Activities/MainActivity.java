@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -253,6 +254,12 @@ public class MainActivity extends AppCompatActivity {
         mWebView.getSettings().setGeolocationEnabled(true);
         String userAgent = mWebView.getSettings().getUserAgentString();
         mWebView.getSettings().setUserAgentString(userAgent + " " + Constants.USER_AGENT_STRING);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            if (0 != (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE)) {
+                mWebView.setWebContentsDebuggingEnabled(true);
+            }
+        }
 
         //쿠키 유지 설정
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -1069,31 +1076,31 @@ public class MainActivity extends AppCompatActivity {
 
     private void analyticsFirebase(String url) {
         Bundle bundle = new Bundle();
-        if(url.startsWith("tel:")){
+        if(url.toLowerCase().startsWith("tel:")){
             bundle.putString(FirebaseAnalytics.Param.ITEM_ID,"전화상담");
             mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.ADD_TO_CART, bundle);
-        }else if(url.contains("loaninfo")){
+        }else if(url.toLowerCase().contains("loaninfo")){
             bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "대출상품소개");
             mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.ADD_TO_WISHLIST, bundle);
-        }else if(url.contains("loan_simulation_info")){
+        }else if(url.toLowerCase().contains("loan_simulation_info")){
             bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "대출가능한도조회");
             mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM_LIST, bundle);
-        }else if(url.contains("loanapplication/baro")){
+        }else if(url.toLowerCase().contains("loanapplication/baro")){
             bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "대출신청(신규)");
             mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.BEGIN_CHECKOUT, bundle);
-        }else if(url.contains("loanapplication/simple")){
+        }else if(url.toLowerCase().contains("loanapplication/simple")){
             bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "대출신청(기존)");
             mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-        }else if(url.contains("loancomplete/y/101658")){
+        }else if(url.toLowerCase().contains("loancomplete/y/101658")){
             bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "대출성공(바로신규)");
             mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.ECOMMERCE_PURCHASE, bundle);
-        }else if(url.contains("loancomplete/y/100909")){
+        }else if(url.toLowerCase().contains("loancomplete/y/100909")){
             bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "대출성공(기존신규)");
             mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.ECOMMERCE_PURCHASE, bundle);
-        }else if(url.contains("loancomplete/n")){
+        }else if(url.toLowerCase().contains("loancomplete/n")){
             bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "대출부결");
             mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.PURCHASE_REFUND, bundle);
-        }else if(url.contains("loaninfo")){
+        }else if(url.toLowerCase().contains("loancomplete/y/101523")){
             bundle.putString(FirebaseAnalytics.Param.ITEM_ID, "대출성공(재대출)");
             mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SHARE, bundle);
         }
@@ -1107,33 +1114,33 @@ public class MainActivity extends AppCompatActivity {
 
     private void analyticsFacebook(String url) {
         Bundle params = new Bundle();
-        if(url.startsWith("tel:")){
+        if(url.toLowerCase().startsWith("tel:")){
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT, url);
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, url);
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_TYPE, "tel:");
             params.putString(AppEventsConstants.EVENT_PARAM_CURRENCY, "KRW");
             logger.logEvent(AppEventsConstants.EVENT_NAME_ADDED_TO_CART, 1, params);
-        }else if(url.contains("loaninfo")){
+        }else if(url.toLowerCase().contains("loaninfo")){
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_TYPE, "page");
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT, "대출상품소개");
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, "대출상품소개");
             params.putString(AppEventsConstants.EVENT_PARAM_CURRENCY, "KRW");
             logger.logEvent(AppEventsConstants.EVENT_NAME_VIEWED_CONTENT, 1, params);
-        }else if(url.contains("loan_simulation_info")){
+        }else if(url.toLowerCase().contains("loan_simulation_info")){
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_TYPE, "page");
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT, "대출가능한도조회");
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, "대출가능한도조회");
             params.putInt(AppEventsConstants.EVENT_PARAM_MAX_RATING_VALUE, 1);
             logger.logEvent(AppEventsConstants.EVENT_NAME_RATED, 1, params);
-        }else if(url.contains("loanapplication/baro")){
+        }else if(url.toLowerCase().contains("loanapplication/baro")){
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT, "대출신청(신규)");
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, "대출신청(신규)");
             params.putInt(AppEventsConstants.EVENT_PARAM_SUCCESS, 1);
             logger.logEvent(AppEventsConstants.EVENT_NAME_COMPLETED_TUTORIAL, params);
-        }else if(url.contains("loanapplication/simple")){
+        }else if(url.toLowerCase().contains("loanapplication/simple")){
             params.putString(AppEventsConstants.EVENT_PARAM_REGISTRATION_METHOD, "대출신청(기존)");
             logger.logEvent(AppEventsConstants.EVENT_NAME_COMPLETED_REGISTRATION, params);
-        }else if(url.contains("loancomplete/y/101658")){
+        }else if(url.toLowerCase().contains( "loancomplete/y/101658".toLowerCase() )){
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT, "대출성공(바로신규)");
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, "대출성공(바로신규)");
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_TYPE, "page");
@@ -1141,7 +1148,7 @@ public class MainActivity extends AppCompatActivity {
             params.putInt(AppEventsConstants.EVENT_PARAM_PAYMENT_INFO_AVAILABLE, 1);
             params.putString(AppEventsConstants.EVENT_PARAM_CURRENCY, "KRW");
             logger.logEvent(AppEventsConstants.EVENT_NAME_INITIATED_CHECKOUT, 1, params);
-        }else if(url.contains("loancomplete/y/100909")){
+        }else if(url.toLowerCase().contains("loancomplete/y/100909".toLowerCase())){
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT, "대출성공(기존신규)");
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, "대출성공(기존신규)");
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_TYPE, "page");
@@ -1149,12 +1156,12 @@ public class MainActivity extends AppCompatActivity {
             params.putInt(AppEventsConstants.EVENT_PARAM_PAYMENT_INFO_AVAILABLE, 1);
             params.putString(AppEventsConstants.EVENT_PARAM_CURRENCY, "KRW");
             logger.logEvent(AppEventsConstants.EVENT_NAME_INITIATED_CHECKOUT, 1, params);
-        }else if(url.contains("loancomplete/n")){
+        }else if(url.toLowerCase().contains("loancomplete/n")){
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT, "대출부결");
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, "대출부결");
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_TYPE, "page");
             logger.logEvent(AppEventsConstants.EVENT_NAME_SPENT_CREDITS, 1, params);
-        }else if(url.contains("loancomplete/y/101523")){
+        }else if(url.toLowerCase().contains("loancomplete/y/101523")){
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT, "대출성공(재대출)");
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_ID, "대출성공(재대출)");
             params.putString(AppEventsConstants.EVENT_PARAM_CONTENT_TYPE, "page");
