@@ -1,5 +1,6 @@
 package com.barocredit.barobaro.Activities;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.NativeActivity;
@@ -55,6 +56,7 @@ import org.apache.http.protocol.HTTP;
 //import org.apache.http.protocol.HTTP;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -63,6 +65,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import static com.softforum.xecure.ui.crypto.SignCertSelectWindow.mSignOption;
 
@@ -92,6 +95,7 @@ public class InitActivity extends Activity {
     public static final int REQUEST_CODE_SPLASH = 1;
     private IxSecureManagerHelper mSecureMngHelper = IxSecureManagerHelper.getInstance();
 
+    public static final int REQUEST_READ_PHONE_STATE = 2;
 
 
     @Override
@@ -235,8 +239,31 @@ public class InitActivity extends Activity {
                 Constants.XAS_APPVER,
                 Constants.XAS_LIVE_UPDATE
         );
-        doProgress = new DoProgress();
-        doProgress.execute();
+
+
+        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
+
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE}, REQUEST_READ_PHONE_STATE);
+        } else {
+            doProgress = new DoProgress();
+            doProgress.execute();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_READ_PHONE_STATE:
+                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    doProgress = new DoProgress();
+                    doProgress.execute();
+                }
+                break;
+
+            default:
+                break;
+        }
     }
 
     private class DoProgress extends AsyncTask<Integer, Void, Integer> {
@@ -264,6 +291,14 @@ public class InitActivity extends Activity {
         @Override
         protected Integer doInBackground(Integer... params) {
 
+            try {
+                System.loadLibrary("XAS_jni");
+
+            } catch (Exception var9) {
+                Log.d("XecureAppShield", "Exception occurred. loading library failed.");
+            }
+
+
 			/*
 			 *  App무결성 검증을 수행한다.
 			 */
@@ -283,6 +318,8 @@ public class InitActivity extends Activity {
             String aIdentifier = null;
 
             Log.d("XecureAppShield", "lib path = " + getApplicationContext().getApplicationInfo().nativeLibraryDir);
+
+
             int result = XecureAppShield.getInstance().checkApp(getApplicationContext(), aIdentifier);
             if( result == XecureAppShield.getInstance().UPDATE_CODE){
                 Log.d("XecureAppShield", "------------  XAS_SO_UPDATE  ------------");
@@ -293,8 +330,8 @@ public class InitActivity extends Activity {
 				  */
                 Log.d("XecureAppShield", "URL : " + XecureAppShield.getInstance().getUpdateURL());
                 result  = XecureAppShield.getInstance().SOUpdate(XecureAppShield.getInstance().getUpdateURL());
-                mErrorMessage = XecureAppShield.getInstance().GetErrorMsg(result);
-
+//                mErrorMessage = XecureAppShield.getInstance().GetErrorMsg(result);
+                mErrorMessage = "변조된 앱";
 				 /*
 				  * 라이브업데이트 결과 로그 및 UPDATE_RESULT Instance 변수에 결과를 알려준다.
 				  */
@@ -307,7 +344,6 @@ public class InitActivity extends Activity {
                     Log.d("XecureAppShield", "------------  XecureAppShield XAS_SO_UPDATE  ------------" );
                 }
             }
-
             return	result;
         }
 
@@ -337,9 +373,9 @@ public class InitActivity extends Activity {
 			 * 앱 무결성 검증 결과 출력 및 성공일 경우
 			 * 토큰 검증을 위한 인터페이스를 노출한다.
 			 */
-            mErrorMessage = XecureAppShield.getInstance().GetErrorMsg(result);
-
             Log.d("XecureAppShield", "XAS_RESULT : " + result);
+//            mErrorMessage = XecureAppShield.getInstance().GetErrorMsg(result);
+            mErrorMessage = "변조된 앱";
             Log.d("XecureAppShield", "XAS_MESSAGE : " + mErrorMessage);
 
 //            Toast.makeText(getApplicationContext(), "<" + result + "> :" + mErrorMessage, Toast.LENGTH_LONG).show();

@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
     //
 
     private EditText mEdit_plainMsg;				// edt_plain_msg
-//    private EditText mEdit_signedMsg;				// edt_signed_msg
+    //    private EditText mEdit_signedMsg;				// edt_signed_msg
 //    private EditText mEdit_vidInfoMsg;				// edt_vidInfo_msg
     private EditText mEdit_full_idn;				// edt_full_idn
     private EditText mEdit_result_verifier_sign;	// edt_verifier_sign
@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
 
     String mPEMVal = "";
 
-//    private int mSignOption = 276;   // (4+16+256)
+    //    private int mSignOption = 276;   // (4+16+256)
     private int mSignOption = 12;   // (4+16+256)
 
     String hostUrl = Constants.XAS_BASE_DOMAIN;
@@ -207,11 +207,10 @@ public class MainActivity extends AppCompatActivity {
         EnviromentUtil.installAnySign(mContext);
 
         // Obtain the FirebaseAnalytics instance.
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-        analyticsFirebase();
+//        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+//        analyticsFirebase();
         FacebookSdk.sdkInitialize(getApplicationContext());
         AppEventsLogger.activateApp(this);
-//        FirebaseDynamicLinks.getDynamicLink();
         FirebaseDynamicLinks.getInstance().getDynamicLink(getIntent())
                 .addOnSuccessListener(this, new OnSuccessListener<PendingDynamicLinkData>() {
                     @Override
